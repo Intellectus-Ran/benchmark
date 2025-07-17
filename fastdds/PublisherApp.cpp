@@ -259,6 +259,17 @@ namespace eprosima {
                                     return is_stopped();
                                 });
                     }
+                    
+                    // 모든 샘플을 발행한 후 빈 배열 전송
+                    if (!is_stopped())
+                    {
+                        // 빈 배열 생성 및 전송
+                        configuration_.data().resize(0);
+                        if (RETCODE_OK == writer_->write(&configuration_))
+                        {
+                            std::cout << "Empty message sent to signal completion" << std::endl;
+                        }
+                    }
                 }
 
                 bool PublisherApp::publish()

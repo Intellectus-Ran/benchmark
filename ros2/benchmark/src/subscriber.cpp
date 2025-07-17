@@ -37,18 +37,13 @@ private:
             start_time_ = system_clock::now();
         }
 
-        // 바이트 수 누적
-        total_bytes_ += msg->data.size();
-        received_samples_++;
-
         // 현재 시각을 CSV에 기록
         std::string timestamp = get_timestamp_with_ms();
         csv_file_ << timestamp << "\n";
 
-        RCLCPP_INFO(this->get_logger(), "Received message [%zu bytes] (%zu / %zu)", msg->data.size(), received_samples_, total_expected_samples_);
-
-        if (received_samples_ >= total_expected_samples_) {
-            RCLCPP_INFO(this->get_logger(), "Received all expected samples");
+        // 빈 메시지 체크 (메시지 크기가 0이면 종료 신호로 간주)
+        if (msg->data.size() == 0) {
+            RCLCPP_INFO(this->get_logger(), "Received empty message - publisher finished");
 
             end_time_ = system_clock::now();
             auto duration_us = duration_cast<microseconds>(end_time_ - start_time_).count();
@@ -56,12 +51,20 @@ private:
             double throughput = static_cast<double>(total_bytes_) / duration_sec;
             double loss_rate = static_cast<double>(total_expected_samples_ - received_samples_) / total_expected_samples_;
 
-            RCLCPP_INFO(this->get_logger(), "Received all expected samples");
+            RCLCPP_INFO(this->get_logger(), "Total received: %zu", received_samples_);
             RCLCPP_INFO(this->get_logger(), "Total time (us): %ld", duration_us);
             RCLCPP_INFO(this->get_logger(), "Throughput per sec: %.2f", throughput);
             RCLCPP_INFO(this->get_logger(), "Loss rate: %.4f", loss_rate);
             rclcpp::shutdown();
+            return;
         }
+
+        // 바이트 수 누적
+        total_bytes_ += msg->data.size();
+        received_samples_++;
+
+        RCLCPP_INFO(this->get_logger(), "Received message [%zu bytes] (%zu / %zu)", 
+                   msg->data.size(), received_samples_, total_expected_samples_);
     }
 
     std::string get_timestamp_with_ms() {

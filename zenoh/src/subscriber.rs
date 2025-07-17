@@ -49,15 +49,18 @@ async fn main() {
 
     let mut received_count = 0;
     let mut total_bytes = 0;
-    let start_time_ns = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_nanos() as usize;
+    let mut start_time_ns = 0;
 
     loop {
         match subscriber.recv() {
             Ok(sample) => {
-                received_count += 1;
+                if received_count == 0 {
+                    start_time_ns = SystemTime::now()
+                        .duration_since(UNIX_EPOCH)
+                        .unwrap()
+                        .as_nanos() as usize;
+                }
+
                 let timestamp = get_timestamp_with_ms();
                 if let Err(e) = writeln!(writer, "{}", timestamp) {
                     eprintln!("CSV write failed: {}", e);
@@ -66,12 +69,8 @@ async fn main() {
                 let zbytes = sample.payload();
                 let data_size = zbytes.len();
 
-                println!("Received message with [{} bytes] ({} / {})", 
-                    data_size, received_count, expected_samples);
-
-                total_bytes += data_size;
-
-                if received_count >= expected_samples {
+                // 빈 메시지가 오면 종료
+                if data_size == 0 {
                     let now = SystemTime::now().duration_since(UNIX_EPOCH)
                         .unwrap().as_nanos() as usize;
 
@@ -83,13 +82,21 @@ async fn main() {
                     let loss_rate = (expected_samples - received_count) as f64 
                                     / expected_samples as f64;
 
-                    println!("Received all expected samples");
+                    println!("Received empty message - publisher finished");
+                    println!("Total received: {}", received_count);
                     println!("Total time (microseconds): {}", duration_us);
                     println!("Throughput (bytes per second): {:.2}", throughput);
                     println!("Loss rate: {:.4}", loss_rate);
 
-                    break; // 모든 샘플을 받았으므로 종료
+                    break; // 빈 메시지를 받았으므로 종료
                 }
+                
+                received_count += 1;
+
+                println!("Received message with [{} bytes] ({} / {})", 
+                    data_size, received_count, expected_samples);
+
+                total_bytes += data_size;
             }
             Err(e) => {
                 eprintln!("Failed to receive message: {e}");

@@ -53,7 +53,10 @@ async fn main() {
         
         // 지정된 샘플 수에 도달하면 종료
         if count >= args.sample_count {
-            println!("Done publishing {} messages, exiting...", args.sample_count);
+            // 빈 메시지 전송
+            let empty_data = vec![0u8; 0];
+            publisher.put(empty_data).await.expect("Failed to publish empty message");
+            println!("Done publishing {} messages, sent empty message, exiting...", args.sample_count);
             break;
         }
         

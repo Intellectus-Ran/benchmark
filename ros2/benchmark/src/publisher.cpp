@@ -22,14 +22,23 @@ private:
     void publish_bytes()
     {
         std_msgs::msg::UInt8MultiArray msg;
-        msg.data.resize(message_size_);
-
-        publisher_->publish(msg);
-        count_++;
-        RCLCPP_INFO(this->get_logger(), "Published message %d with size: %zu", count_, msg.data.size());
-
-        if (count_ >= sample_count_) {
-            RCLCPP_INFO(this->get_logger(), "Finished sending %d messages. Shutting down...", sample_count_);
+        
+        if (count_ < sample_count_) {
+            msg.data.resize(message_size_);
+            
+            publisher_->publish(msg);
+            count_++;
+            RCLCPP_INFO(this->get_logger(), "Published message %d with size: %zu", count_, msg.data.size());
+        } 
+        else if (count_ == sample_count_) {
+            // 빈 메시지 전송 (샘플 카운트 도달 시)
+            msg.data.clear();
+            publisher_->publish(msg);
+            count_++;
+            RCLCPP_INFO(this->get_logger(), "Finished sending %d messages. Sent empty message.", sample_count_);
+        }
+        else {
+            RCLCPP_INFO(this->get_logger(), "Shutting down...");
             rclcpp::shutdown();
         }
     }

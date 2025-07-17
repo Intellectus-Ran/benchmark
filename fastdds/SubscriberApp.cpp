@@ -241,9 +241,8 @@ void SubscriberApp::on_data_available(
             csv_file_ << timestamp << "\n";
 
             // 빈 배열인 경우 수신 종료
-            if (received_samples_ >= samples_)
-            {
-                std::cout << "Publisher done publishing" << std::endl;
+            if (configuration_.data().size() == 0) {
+                std::cout << "Publisher done publishing (received empty message)" << std::endl;
 
                 // 총 수신 갯수
                 std::cout << "Total received: " << received_samples_ << std::endl;
