@@ -124,6 +124,10 @@ private:
         std::uint64_t total_time_;
 
         std::ofstream csv_file_; // 클래스 멤버 변수로 선언
+
+        std::chrono::time_point<std::chrono::system_clock> start_time_;
+        
+        std::chrono::time_point<std::chrono::system_clock> end_time_;
 };
 
 } // namespace configuration

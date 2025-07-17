@@ -221,8 +221,6 @@ void SubscriberApp::on_data_available(
         DataReader* reader)
 {
     SampleInfo info;
-    std::chrono::time_point<std::chrono::system_clock> start_time;
-    std::chrono::time_point<std::chrono::system_clock> end_time;
 
     while ((!is_stopped()) && (RETCODE_OK == reader->take_next_sample(&configuration_, &info)))
     {
@@ -230,7 +228,7 @@ void SubscriberApp::on_data_available(
         {
             // 시작시간 기록
             if (received_samples_ == 0) {
-                start_time = std::chrono::system_clock::now();
+                start_time_ = std::chrono::system_clock::now();
             }
 
             // 수신 바이트 누적
@@ -248,12 +246,13 @@ void SubscriberApp::on_data_available(
                 std::cout << "Total received: " << received_samples_ << std::endl;
 
                 // 총 수신 시간
-                end_time = std::chrono::system_clock::now();
-                auto total_time_ = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
-                std::cout << "Total time: " << total_time_ << std::endl;
-
+                end_time_ = std::chrono::system_clock::now();
+                auto duration_us = std::chrono::duration_cast<std::chrono::microseconds>(end_time_ - start_time_).count();
+                std::cout << "Total time (us): " << duration_us << std::endl;
+                
                 // 초당 처리량
-                std::cout << "Throughput per sec: " << static_cast<double>(total_bytes_) / (total_time_ / 1000000.0) << std::endl;
+                double duration_sec = duration_us / 1'000'000.0;
+                std::cout << "Throughput per sec: " << static_cast<double>(total_bytes_) / duration_sec << std::endl;
 
                 // 메시지 유실률
                 std::cout << "Loss Rate: " << static_cast<double>(samples_ - received_samples_) / samples_ << std::endl;
