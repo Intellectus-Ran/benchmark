@@ -198,6 +198,22 @@ void SubscriberApp::on_subscription_matched(
     }
 }
 
+std::string get_timestamp_with_ms() {
+    using namespace std::chrono;
+
+    auto now = system_clock::now();
+    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+
+    auto time_t_now = system_clock::to_time_t(now);
+    std::tm local_tm = *std::localtime(&time_t_now);
+
+    std::ostringstream oss;
+    oss << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S");
+    oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+
+    return oss.str();
+}
+
 void SubscriberApp::on_data_available(
         DataReader* reader)
 {
@@ -207,21 +223,7 @@ void SubscriberApp::on_data_available(
     std::ofstream csv_file("fastdds_timestamp.csv");
     csv_file << "Timestamp\n"; // 헤더 작성
 
-    std::string get_timestamp_with_ms() {
-        using namespace std::chrono;
 
-        auto now = system_clock::now();
-        auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
-
-        auto time_t_now = system_clock::to_time_t(now);
-        std::tm local_tm = *std::localtime(&time_t_now);
-
-        std::ostringstream oss;
-        oss << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S");
-        oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
-
-        return oss.str();
-    }
 
     while ((!is_stopped()) && (RETCODE_OK == reader->take_next_sample(&configuration_, &info)))
     {
