@@ -207,6 +207,22 @@ void SubscriberApp::on_data_available(
     std::ofstream csv_file("fastdds_timestamp.csv");
     csv_file << "Timestamp\n"; // 헤더 작성
 
+    std::string get_timestamp_with_ms() {
+        using namespace std::chrono;
+
+        auto now = system_clock::now();
+        auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+
+        auto time_t_now = system_clock::to_time_t(now);
+        std::tm local_tm = *std::localtime(&time_t_now);
+
+        std::ostringstream oss;
+        oss << std::put_time(&local_tm, "%Y-%m-%d %H:%M:%S");
+        oss << '.' << std::setfill('0') << std::setw(3) << ms.count();
+
+        return oss.str();
+    }
+
     while ((!is_stopped()) && (RETCODE_OK == reader->take_next_sample(&configuration_, &info)))
     {
         if ((info.instance_state == ALIVE_INSTANCE_STATE) && info.valid_data)
@@ -220,13 +236,11 @@ void SubscriberApp::on_data_available(
             total_bytes_ += configuration_.data().size();
 
             // CSV에 수신 시간 기록
-            auto timestamp = std::chrono::system_clock::now();
-            auto time_t_timestamp = std::chrono::system_clock::to_time_t(timestamp);
-            auto local_time = std::localtime(&time_t_timestamp);
-            csv_file << std::put_time(local_time, "%Y-%m-%d %H:%M:%S") << "\n";
+            std::string timestamp = get_timestamp_with_ms();
+            csv_file << timestamp << "\n";
 
             // 빈 배열인 경우 수신 종료
-            if (configuration_.data().empty())
+            if (received_samples_ >= samples_)
             {
                 std::cout << "Publisher done publishing" << std::endl;
 
