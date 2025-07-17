@@ -25,9 +25,6 @@ if(NOT fastdds_FOUND)
     find_package(fastdds 3 REQUIRED)
 endif()
 
-find_package(OpenCV REQUIRED)
-
-
 #Check C++11
 include(CheckCXXCompilerFlag)
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
@@ -76,6 +73,3 @@ foreach(XML_FILE_COMPLETE_PATH ${XML_FILES})
     install(FILES ${XML_FILE_COMPLETE_PATH}
         DESTINATION ${DATA_INSTALL_DIR}/fastdds/examples/cpp/configuration/${BIN_INSTALL_DIR})
 endforeach()
-
-target_include_directories(configuration PRIVATE ${OpenCV_INCLUDE_DIRS})
-target_link_libraries(configuration ${OpenCV_LIBS})

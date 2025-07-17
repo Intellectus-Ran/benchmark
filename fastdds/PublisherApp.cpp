@@ -37,8 +37,6 @@
 
 #include "ConfigurationPubSubTypes.hpp"
 
-#include <opencv2/opencv.hpp>
-
 using namespace eprosima::fastdds::dds;
 using namespace eprosima::fastdds::rtps;
 

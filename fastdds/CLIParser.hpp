@@ -81,14 +81,12 @@ public:
         uint32_t msg_size = 10;
         uint32_t ownership_strength = 0;
         std::string profile_writer = "";
-        std::string path_to_video = "";
         PublishModeQosPolicyKind publish_mode = PublishModeQosPolicyKind::SYNCHRONOUS_PUBLISH_MODE;
     };
 
     //! Subscriber application configuration structure
     struct subscriber_config : public entity_config
     {
-        std::string path_to_video = "";
         std::string profile_reader = "";
     };
 
@@ -110,12 +108,11 @@ public:
     static void print_help(
             uint8_t return_code)
     {
-        std::cout << "Usage: configuration <entity> <absolute_path> [options]"                          << std::endl;
+        std::cout << "Usage: configuration <entity> [options]"                                          << std::endl;
         std::cout << ""                                                                                 << std::endl;
         std::cout << "Entities:"                                                                        << std::endl;
         std::cout << "  publisher                           Run a publisher entity"                     << std::endl;
         std::cout << "  subscriber                          Run a subscriber entity"                    << std::endl;
-        std::cout << ""                                                                                 << std::endl;
         std::cout << ""                                                                                 << std::endl;
         std::cout << "Common options:"                                                                  << std::endl;
         std::cout << "      --deadline <num>                Set deadline period in milliseconds"        << std::endl;
@@ -180,7 +177,7 @@ public:
         std::cout << "                                       · SHM:     Shared Memory Transport only"   << std::endl;
         std::cout << "                                       · UDPv4:   UDP over IPv4 only"             << std::endl;
         std::cout << "                                       · LARGE_DATA: Large data mode"             << std::endl;
-        std::cout << "                                         (refer to Int2 DDS documentation)"       << std::endl;
+        std::cout << "                                         (refer to Fast DDS documentation)"       << std::endl;
         std::cout << "                                      (Default: DEFAULT)"                         << std::endl;
         std::cout << "      --ttl <num>                     Number of multicast discovery Time To Live" << std::endl;
         std::cout << "                                      hops  [0 <= <num> <= 255]"                  << std::endl;
@@ -239,13 +236,9 @@ public:
 
         std::string first_argument = argv[1];
 
-        uint8_t next_idx = 2;
-
         if (first_argument == "publisher" )
         {
             config.entity = CLIParser::EntityKind::PUBLISHER;
-            config.pub_config.path_to_video = argv[2];
-            next_idx++;
         }
         else if ( first_argument == "subscriber")
         {
@@ -261,21 +254,10 @@ public:
             print_help(EXIT_FAILURE);
         }
 
-        std::string second_argument = argv[2];
-
-        if (first_argument == "publisher")
-        {
-            config.pub_config.path_to_video = second_argument;
-        }
-        else if ( first_argument == "subscriber")
-        {
-            config.sub_config.path_to_video = second_argument;
-        }
-
         // max value allowed taking into account that the input is receiving millisecond values
         uint32_t max_duration = static_cast<uint32_t>(floor(std::numeric_limits<uint32_t>::max() * 1e-3)); // = 4294967
 
-        for (int i = 3; i < argc; ++i)
+        for (int i = 2; i < argc; ++i)
         {
             std::string arg = argv[i];
 
@@ -1061,8 +1043,8 @@ public:
                         try
                         {
                             int input = std::stoi(argv[i]);
-                            if (static_cast<long>(input) < static_cast<long>(std::numeric_limits<uint32_t>::min()) ||
-                                    static_cast<long>(input) > static_cast<long>(std::numeric_limits<uint32_t>::max()))
+                            if (input < 1 ||
+                                    static_cast<unsigned int>(input) > std::numeric_limits<uint32_t>::max())
                             {
                                 throw std::out_of_range("ownership strength argument " + std::string(
                                                   argv[i]) + " out of range [0, " +
