@@ -34,7 +34,6 @@
 #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.hpp>
 #include <fastdds/rtps/transport/UDPv4TransportDescriptor.hpp>
 #include <fastdds/rtps/transport/UDPv6TransportDescriptor.hpp>
-#include <opencv2/imgcodecs.hpp>
 
 #include "Application.hpp"
 #include "CLIParser.hpp"
@@ -60,7 +59,6 @@ SubscriberApp::SubscriberApp(
     , stop_(false)
     , total_bytes_(0)
 {
-    latency_.reserve(config.samples);
 
     // Create the participant
     DomainParticipantQos pqos = PARTICIPANT_QOS_DEFAULT;
@@ -267,9 +265,8 @@ void SubscriberApp::on_data_available(
             received_samples_++;
 
             // Print Hello world message data
-            std::cout << "Message with index: '" << configuration_.index()
-                      << "' RECEIVED (" << configuration_.data().size() << " bytes)" << std::endl;
-
+            std::cout << "Received message with [" << configuration_.data().size() << " bytes] (" 
+                      << received_samples_ << " / " << samples_ << ")" << std::endl;
         }
     }
 }

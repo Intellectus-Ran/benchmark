@@ -1,0 +1,18 @@
+[package]
+name = "zenoh-benchmark"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "publisher"
+path = "src/publisher.rs"
+
+[[bin]]
+name = "subscriber"
+path = "src/subscriber.rs"
+
+[dependencies]
+zenoh = { version = "1.4.0" }
+tokio = { version = "1", features = ["full"] }
+clap = { version = "4.5", features = ["derive"] }
+chrono = "0.4"
