@@ -14,7 +14,7 @@ public:
     : Node("byte_subscriber"), received_samples_(0), total_bytes_(0), total_expected_samples_(total_expected_samples)
     {
         subscription_ = this->create_subscription<std_msgs::msg::UInt8MultiArray>(
-            "ros_benchmark", 30,
+            "ros_benchmark", 10,
             std::bind(&MinimalSubscriber::topic_callback, this, std::placeholders::_1));
 
         csv_file_.open("ros2_timestamp.csv");
