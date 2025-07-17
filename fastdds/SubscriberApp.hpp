@@ -22,6 +22,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <fstream>
 #include <mutex>
 
 #include <fastdds/dds/domain/DomainParticipant.hpp>
@@ -121,6 +122,8 @@ private:
         std::vector<uint64_t> latency_;
 
         std::uint64_t total_time_;
+
+        std::ofstream csv_file_; // 클래스 멤버 변수로 선언
 };
 
 } // namespace configuration

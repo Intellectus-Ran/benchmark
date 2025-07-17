@@ -59,6 +59,11 @@ SubscriberApp::SubscriberApp(
     , stop_(false)
     , total_bytes_(0)
 {
+    csv_file_.open("fastdds_timestamp.csv", std::ios::app);
+    if (csv_file_.tellp() == 0) // 파일이 비어있으면 헤더 작성
+    {
+        csv_file_ << "Timestamp\n";
+    }
 
     // Create the participant
     DomainParticipantQos pqos = PARTICIPANT_QOS_DEFAULT;
@@ -218,10 +223,6 @@ void SubscriberApp::on_data_available(
     SampleInfo info;
     std::chrono::time_point<std::chrono::system_clock> start_time;
     std::chrono::time_point<std::chrono::system_clock> end_time;
-    std::ofstream csv_file("fastdds_timestamp.csv");
-    csv_file << "Timestamp\n"; // 헤더 작성
-
-
 
     while ((!is_stopped()) && (RETCODE_OK == reader->take_next_sample(&configuration_, &info)))
     {
@@ -237,7 +238,7 @@ void SubscriberApp::on_data_available(
 
             // CSV에 수신 시간 기록
             std::string timestamp = get_timestamp_with_ms();
-            csv_file << timestamp << "\n";
+            csv_file_ << timestamp << "\n";
 
             // 빈 배열인 경우 수신 종료
             if (received_samples_ >= samples_)
@@ -248,11 +249,11 @@ void SubscriberApp::on_data_available(
                 std::cout << "Total received: " << received_samples_ << std::endl;
 
                 // 총 수신 시간
-                std::cout << "Throughput per sec: " << total_time_ << std::endl;
-
-                // 초당 처리량
                 end_time = std::chrono::system_clock::now();
                 auto total_time_ = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time).count();
+                std::cout << "Total time: " << total_time_ << std::endl;
+
+                // 초당 처리량
                 std::cout << "Throughput per sec: " << static_cast<double>(total_bytes_) / (total_time_ / 1000000.0) << std::endl;
 
                 // 메시지 유실률
