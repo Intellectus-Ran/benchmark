@@ -247,8 +247,8 @@ namespace eprosima {
                     {
                         if (publish())
                         {
-                            std::cout << "Sample: '" << configuration_.message().data() << "' with index: '"
-                                      << configuration_.index() << "' (" << static_cast<int>(configuration_.data().size())
+                            std::cout << "Sample with index: '"
+                                      << index << "' (" << static_cast<int>(configuration_.data().size())
                                       << " Bytes) SENT" << std::endl;
                         }
                         // Wait for period or stop event
