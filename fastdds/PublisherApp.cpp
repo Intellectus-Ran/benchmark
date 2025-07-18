@@ -242,7 +242,7 @@ namespace eprosima {
 
                 void PublisherApp::run()
                 {
-                    int index = 0
+                    int index = 0;
                     while (!is_stopped() && ((samples_ == 0) || (index < samples_)))
                     {
                         if (publish())
