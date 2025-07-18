@@ -58,6 +58,9 @@ namespace eprosima {
                     , stop_(false)
                     , wait_(config.wait)
                 {
+                    // Set up the data type with initial values
+                    configuration_.data(std::vector<uint8_t>(config.msg_size, 0xAA));
+
                     // Create the participant
                     DomainParticipantQos pqos = PARTICIPANT_QOS_DEFAULT;
                     pqos.name("Configuration_pub_participant");
@@ -309,7 +312,7 @@ namespace eprosima {
                     bool ret = false;
                     
                     ret = (RETCODE_OK == writer_->write(&configuration_));
-                    
+
                     return ret;
                 }
 
