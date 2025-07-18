@@ -242,34 +242,22 @@ namespace eprosima {
 
                 void PublisherApp::run()
                 {
-                    // Wait for the data endpoints discovery
-                    std::unique_lock<std::mutex> matched_lock(mutex_);
-                    cv_.wait(matched_lock, [&]()
-                            {
-                                // Publisher starts sending messages when enough entities have been discovered.
-                                return ((matched_ >= static_cast<int16_t>(wait_)) || is_stopped());
-                            });
-
-                    int index = 0;
-
-                    while (!is_stopped() && ((samples_ == 0) || index < samples_))
+                    int index = 0
+                    while (!is_stopped() && ((samples_ == 0) || (index < samples_)))
                     {
-
                         if (publish())
                         {
-                            std::cout << "Sample with index: "
-                                      << index << " (" << static_cast<int>(configuration_.data().size())
+                            std::cout << "Sample: '" << configuration_.message().data() << "' with index: '"
+                                      << configuration_.index() << "' (" << static_cast<int>(configuration_.data().size())
                                       << " Bytes) SENT" << std::endl;
                         }
-
-                        index++;
-
                         // Wait for period or stop event
                         std::unique_lock<std::mutex> terminate_lock(mutex_);
                         cv_.wait_for(terminate_lock, std::chrono::milliseconds(period_ms_), [&]()
                                 {
                                     return is_stopped();
                                 });
+                        index++;
                     }
                     
                     // 모든 샘플을 발행한 후 빈 배열 전송
@@ -287,9 +275,17 @@ namespace eprosima {
                 bool PublisherApp::publish()
                 {
                     bool ret = false;
-                    
-                    ret = (RETCODE_OK == writer_->write(&configuration_));
-
+                    // Wait for the data endpoints discovery
+                    std::unique_lock<std::mutex> matched_lock(mutex_);
+                    cv_.wait(matched_lock, [&]()
+                            {
+                                // Publisher starts sending messages when enough entities have been discovered.
+                                return ((matched_ >= static_cast<int16_t>(wait_)) || is_stopped());
+                            });
+                    if (!is_stopped())
+                    {
+                        ret = (RETCODE_OK == writer_->write(&configuration_));
+                    }
                     return ret;
                 }
 
