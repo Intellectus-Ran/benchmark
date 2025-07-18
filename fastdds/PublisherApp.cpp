@@ -250,40 +250,10 @@ namespace eprosima {
                                 return ((matched_ >= static_cast<int16_t>(wait_)) || is_stopped());
                             });
 
-                    // 타이머 파일 디스크립터 생성
-                    int tfd = timerfd_create(CLOCK_MONOTONIC, 0);
-                    if (tfd == -1) {
-                        std::cerr << "timerfd_create 실패" << std::endl;
-                        return;
-                    }
-
-                    // 타이머 주기 설정 (33ms 주기)
-                    itimerspec timerSpec;
-                    memset(&timerSpec, 0, sizeof(timerSpec));
-                    timerSpec.it_value.tv_sec = 0;
-                    timerSpec.it_value.tv_nsec = 1;  // 바로 시작
-                    timerSpec.it_interval.tv_sec = 0;
-                    timerSpec.it_interval.tv_nsec = 33000000;  // 33ms
-
-                    if (timerfd_settime(tfd, 0, &timerSpec, NULL) == -1) {
-                        std::cerr << "timerfd_settime 실패" << std::endl;
-                        close(tfd);
-                        return;
-                    }
-
                     int index = 0;
 
                     while (!is_stopped() && ((samples_ == 0) || index < samples_))
                     {
-                        uint64_t expirations;
-
-                        // 타이머 대기 (블로킹)
-                        ssize_t s = read(tfd, &expirations, sizeof(expirations));
-
-                        if (s != sizeof(expirations)) {
-                            std::cerr << "타이머 read 실패" << std::endl;
-                            break;
-                        }
 
                         if (publish())
                         {
@@ -293,6 +263,13 @@ namespace eprosima {
                         }
 
                         index++;
+
+                        // Wait for period or stop event
+                        std::unique_lock<std::mutex> terminate_lock(mutex_);
+                        cv_.wait_for(terminate_lock, std::chrono::milliseconds(period_ms_), [&]()
+                                {
+                                    return is_stopped();
+                                });
                     }
                     
                     // 모든 샘플을 발행한 후 빈 배열 전송
