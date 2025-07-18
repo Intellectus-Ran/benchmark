@@ -128,9 +128,9 @@ namespace eprosima {
                         writer_qos.durability().kind = config.durability;
                         writer_qos.history().kind = config.history_kind;
                         writer_qos.history().depth = config.history_depth;
-                        writer_qos.resource_limits().max_samples = config.max_samples;
-                        writer_qos.resource_limits().max_instances = config.max_instances;
-                        writer_qos.resource_limits().max_samples_per_instance = config.max_samples_per_instance;
+                        writer_qos.resource_limits().max_samples = 2147483647;
+                        writer_qos.resource_limits().max_instances = 2147483647;
+                        writer_qos.resource_limits().max_samples_per_instance = 2147483647;
                         writer_qos.ownership().kind = config.ownership;
                         if (config.ownership_strength > 0
                                 && config.ownership != OwnershipQosPolicyKind::EXCLUSIVE_OWNERSHIP_QOS)

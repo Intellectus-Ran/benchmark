@@ -135,9 +135,9 @@ SubscriberApp::SubscriberApp(
         reader_qos.durability().kind = config.durability;
         reader_qos.history().kind = config.history_kind;
         reader_qos.history().depth = config.history_depth;
-        reader_qos.resource_limits().max_samples = config.max_samples;
-        reader_qos.resource_limits().max_instances = config.max_instances;
-        reader_qos.resource_limits().max_samples_per_instance = config.max_samples_per_instance;
+        reader_qos.resource_limits().max_samples = 2147483647;
+        reader_qos.resource_limits().max_instances = 2147483647;
+        reader_qos.resource_limits().max_samples_per_instance = 2147483647;
         reader_qos.ownership().kind = config.ownership;
         if (config.deadline > 0)
         {
