@@ -58,11 +58,6 @@ namespace eprosima {
                     , stop_(false)
                     , wait_(config.wait)
                 {
-                    // Set up the data type with initial values
-                    configuration_.index(0);
-                    memcpy(configuration_.message().data(), "Configuration", strlen("Configuration") + 1);
-                    configuration_.data(std::vector<uint8_t>(config.msg_size, 0xAA));
-
                     // Create the participant
                     DomainParticipantQos pqos = PARTICIPANT_QOS_DEFAULT;
                     pqos.name("Configuration_pub_participant");
@@ -273,7 +268,9 @@ namespace eprosima {
                         return;
                     }
 
-                    while (!is_stopped() && ((samples_ == 0) || (configuration_.index() < samples_)))
+                    int index = 0;
+
+                    while (!is_stopped() && ((samples_ == 0) || index < samples_))
                     {
                         uint64_t expirations;
 
@@ -287,10 +284,12 @@ namespace eprosima {
 
                         if (publish())
                         {
-                            std::cout << "Sample: '" << configuration_.message().data() << "' with index: '"
-                                      << configuration_.index() << "' (" << static_cast<int>(configuration_.data().size())
+                            std::cout << "Sample with index: "
+                                      << index << " (" << static_cast<int>(configuration_.data().size())
                                       << " Bytes) SENT" << std::endl;
                         }
+
+                        index++;
                     }
                     
                     // 모든 샘플을 발행한 후 빈 배열 전송
@@ -309,7 +308,6 @@ namespace eprosima {
                 {
                     bool ret = false;
                     
-                    configuration_.index(configuration_.index() + 1);
                     ret = (RETCODE_OK == writer_->write(&configuration_));
                     
                     return ret;

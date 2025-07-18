@@ -224,8 +224,6 @@ void SubscriberApp::on_data_available(
 
     while ((!is_stopped()) && (RETCODE_OK == reader->take_next_sample(&configuration_, &info)))
     {
-        if ((info.instance_state == ALIVE_INSTANCE_STATE) && info.valid_data)
-        {
             // 시작시간 기록
             if (received_samples_ == 0) {
                 start_time_ = std::chrono::system_clock::now();
@@ -266,7 +264,6 @@ void SubscriberApp::on_data_available(
             // Print Hello world message data
             std::cout << "Received message with [" << configuration_.data().size() << " bytes] (" 
                       << received_samples_ << " / " << samples_ << ")" << std::endl;
-        }
     }
 }
 
